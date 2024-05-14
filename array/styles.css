@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background-color: #f3a6a6;
+}
+
+.greet {
+    width: 50%;
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+#secPlayArea {
+    margin-top: 50px;
+    display: flex;
+    gap: 1rem;
+}
+
+/* .inputCon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+} */
+
+.inputItems {
+    text-align: center;
+    width: 3rem;
+    height: 3rem;
+    margin: 0 1rem;
+    border: 2px solid #333;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.inputItems:hover {
+    border-color: #4CAF50;
+}
+
+.last-interacted {
+    border: .25rem solid #4CAF50;
+}
+
+.setup {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.setup label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.setup input[type="number"],
+.setup select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+.setup button {
+    padding: 0.8rem 1.5rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    display: inline-block; /* Ensure button is inline-block for centering */
+}
+
+.setup button:hover {
+    background-color: #86e48a;
+}
+
+.array-display {
+    margin-top: 50px;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid #8eaf8f;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.dragged {
+    background-color: #4CAF50;
+}
+
+.deleteBtn {
+    visibility: hidden;
+}
+
+.inputCon:hover .deleteBtn {
+    visibility: visible;
+}
+
+.inputCon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Align children to the start and end of the container */
+    margin-bottom: 10px; /* Adjust as needed */
+}
+
+.addButton {
+    width: 30px;
+    height: 30px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.inputItems {
+    flex: 1;
+    margin-right: 5px; /* Adjust as needed */
+}
+
+.codeEl {
+    margin-left: 5px; /* Adjust as needed */
+}
+
+.index {
+    margin-right: 5px; /* Adjust as needed */
+}
+
