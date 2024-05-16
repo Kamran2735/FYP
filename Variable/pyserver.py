@@ -72,7 +72,7 @@ def execute_code_line_by_line(code):
                         variable_list.append({'name': name, 'value': value, 'type': type(value).__name__, 'scope': scope})
 
                     # Prepare the response
-                    response = {'output': output, 'variables': variable_list}
+                    response = {'code': current_statement, 'output': output, 'variables': variable_list}
 
                     # Append the response to the list
                     responses.append(response)
@@ -124,7 +124,7 @@ def execute_code_line_by_line(code):
                     variable_list.append({'name': name, 'value': value, 'type': type(value).__name__, 'scope': scope})
 
                 # Prepare the response
-                response = {'output': output, 'variables': variable_list}
+                response = {'code': current_statement, 'output': output, 'variables': variable_list}
 
                 # Append the response to the list
                 responses.append(response)

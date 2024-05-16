@@ -121,7 +121,8 @@ async function runCode() {
     console.error('Error:', error);
   }
 }
- 
+
+  
 
 
 async function updateVariableTable(responseArray) {
@@ -229,6 +230,4 @@ async function updateVariableTable(responseArray) {
   }
 }
 
-
-
-
+  

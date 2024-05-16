@@ -1,62 +1,73 @@
-from flask import Flask, render_template, request, jsonify
-import ast
+import sys
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from io import StringIO
 
 app = Flask(__name__)
-CORS(app, resources={r"/runcode": {"origins": "http://127.0.0.1:5500"}}) ) 
+CORS(app)
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+class VariableTracker:
+    def __init__(self):
+        self.variables = []
+        self.ignored_variables = set(dir(sys.modules[__name__]))
 
-@app.route("/runcode", methods=["POST"])
-def run_code():
-    code = request.json["code"]
-    output, variables = execute_with_debug(code)
-    return jsonify({"output": output, "variables": variables})
+    def track_variable_values(self, values):
+        # Ignore specific variables and built-in names
+        ignored_names = self.ignored_variables.union({'tracker', 'original_stdout'})
+        tracked_values = {name: (type(value).__name__, value) for name, value in values.items() if name not in ignored_names and not name.startswith('__')}
+        self.variables.append(tracked_values)
 
-def execute_with_debug(code):
-    output = []
-    variables = []
+    def get_tracked_variables(self):
+        result = []
+        for i, values in enumerate(self.variables, start=1):
+            result.append({name: {"type": var_type, "value": value} for name, (var_type, value) in values.items()})
+        return result
 
-    # Split code into statements
-    statements = code.split('\n')
-    namespace = {}
+class OutputInterceptor:
+    def __init__(self, tracker, original_stdout):
+        self.tracker = tracker
+        self.original_stdout = original_stdout
+        self.buffer = StringIO()
 
-    for statement in statements:
-        try:
-            # Execute the statement
-            exec(statement, namespace)
+    def write(self, text):
+        # Capture output in buffer
+        self.buffer.write(text)
+        self.original_stdout.write(text)  # Ensure the text is still printed to the console
+        if "status here" in text:
+            # Track variable values at print statement
+            self.tracker.track_variable_values(globals().copy())
 
-            # Capture variables after each statement
-            for var_name, var_value in namespace.items():
-                variables.append({
-                    "name": var_name,
-                    "value": var_value,
-                    "dataType": type(var_value).__name__
-                })
+    def flush(self):
+        # Flush buffer to original stdout
+        self.buffer.seek(0)
+        self.original_stdout.write(self.buffer.read())
+        self.original_stdout.flush()
 
-            # Capture output of print statements
-            output.append(namespace.get("__builtins__", {}).get("print_output", ""))
-            namespace["__builtins__"]["print_output"] = ""  # Reset print_output
-            
-            # Check if we encountered a loop and need to pause
-            if "for" in statement or "while" in statement:
-                # We pause the execution here and return the current output and variables
-                return "\n".join(output), variables
-        except Exception as e:
-            output.append(f"Error: {str(e)}")
+    def __getattr__(self, attr):
+        # Pass other attribute calls to the original stdout
+        return getattr(self.original_stdout, attr)
+
+@app.route('/execute', methods=['POST'])
+def execute_code():
+    code = request.json.get('code', '')
+    # Initialize variable tracker for this request
+    tracker = VariableTracker()
     
-    return "\n".join(output), variables
+    # Replace sys.stdout with the interceptor
+    original_stdout = sys.stdout
+    sys.stdout = OutputInterceptor(tracker, original_stdout)
+    
+    try:
+        # Execute the user code
+        exec(code, globals())
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    finally:
+        # Restore original stdout
+        sys.stdout = original_stdout
+    
+    # Return tracked variable values
+    return jsonify(tracker.get_tracked_variables())
 
-
-@app.route("/runcode", methods=["OPTIONS"])
-def options():
-    # Respond to preflight request
-    response = jsonify(success=True)
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-    response.headers.add("Access-Control-Allow-Methods", "POST")
-    return response
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)

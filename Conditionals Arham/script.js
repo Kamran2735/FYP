@@ -1,4 +1,3 @@
-let branch;
 async function runExecution() {
     const code = document.getElementById('codeInput').value;
 
@@ -21,6 +20,7 @@ async function runExecution() {
         console.error('Error:', error);
     }
 }
+
 function visualizeResponse(responseData) {
     const svg = d3.select("svg");
 
@@ -99,3 +99,5 @@ function visualizeResponse(responseData) {
             .style("stroke", (d, j) => j === i ? (responseData[i].executed === "Yes" ? "green" : "red") : "red");
     }
 }
+
+

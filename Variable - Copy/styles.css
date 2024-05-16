@@ -79,19 +79,3 @@ th {
 .highlight {
   background-color: #73ee7d; /* Light red background for changed values */
 }
-/* New styles for code display */
-.code-display {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: auto;
-  padding: 10px;
-}
-
-.code-line {
-  display: block;
-  white-space: pre;
-}
-
-.highlighted {
-  background-color: lightgreen;
-}
