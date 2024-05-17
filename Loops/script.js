@@ -74,13 +74,12 @@
 //     .then(response => response.text())
 //     .then(result => {
 //         console.log(result);
-//         displayStepByStep(); // Call displayStepByStep function here
+//         displayStepByStep(result); // Call displayStepByStep function here
 //     })
 //     .catch(error => console.error('Error:', error));
 // }
 
 function preprocessPythonCode(code) {
-    // Split the code into lines
     const lines = code.split('\n');
     let result = [];
     let blockStack = [];
@@ -89,7 +88,6 @@ function preprocessPythonCode(code) {
         let indentLevel = line.match(/^\s*/)[0];
         result.push(line);
         result.push(`${indentLevel}print("line ${lineNumber}: ${line.trim().replace(/"/g, '\\"')}")`);
-        result.push(`${indentLevel}print("status here")`);
     }
 
     function processBlock(block) {
@@ -99,15 +97,13 @@ function preprocessPythonCode(code) {
         let blockContent = block.map(l => l.line).join('\n').replace(/"/g, '\\"');
         let blockSummary = block.map(l => `line ${l.lineNumber}: ${l.line.trim()}`).join('\\n');
         result.push(blockContent);
-        result.push(`${indentLevel}    print("block starting at line ${block[0].lineNumber}:\\n${blockSummary}")`);
-        result.push(`${indentLevel}    print("status here")`);
+        result.push(`${indentLevel}    print("line ${block[0].lineNumber}:\\n${blockSummary}")`);
     }
 
     lines.forEach((line, index) => {
         let trimmedLine = line.trim();
         let indentLevel = line.match(/^\s*/)[0].length;
 
-        // Check if we are inside a block
         if (blockStack.length > 0) {
             let topBlock = blockStack[blockStack.length - 1];
             if (indentLevel <= topBlock.indentLevel && topBlock.lines.length > 0) {
@@ -125,67 +121,78 @@ function preprocessPythonCode(code) {
         }
     });
 
-    // Process any remaining blocks
     while (blockStack.length > 0) {
         processBlock(blockStack.pop().lines);
     }
 
     return result.join('\n');
 }
-const code = `
-a = 10
-b = 15
-for x in range(3):
-    a = a + 1
-    t = a + 1
-    print(a)
-print("end")
-`.trim();
 
-console.log(preprocessPythonCode(code));
+function runCode() {
+    const codeInput = document.getElementById('codeInput').value.trim();
 
-const preprocessedCode = preprocessPythonCode(code);
+    if (!codeInput) {
+        console.error('Code input is empty');
+        return;
+    }
 
-fetch('http://localhost:5000/execute', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ code: preprocessedCode })
-})
-.then(response => response.json()) // Parse response as JSON
-.then(data => {
-    responseData = data; // Set responseData with the parsed JSON
-    console.log(responseData); // Verify responseData
-    displayStepByStep(); // Call displayStepByStep function here
-})
-.catch(error => console.error('Error:', error));
+    const preprocessedCode = preprocessPythonCode(codeInput);
+
+    fetch('http://localhost:5000/execute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code: preprocessedCode })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(responseData => {
+        displayStepByStep(responseData);
+    })
+    .catch(error => console.error('Fetch Error:', error));
+}
 
 let stepIndex = 0;
+function displayStepByStep(responseData) {
+    console.log(responseData);
+    const variableTableBody = document.getElementById('variableTableBody');
+    const outputArea = document.getElementById('outputArea');
 
-function displayStepByStep() {
-  const step = responseData[stepIndex];
-  const variableTableBody = document.getElementById('variableTableBody');
+    variableTableBody.innerHTML = '';
+    outputArea.innerHTML = '';
 
-  // Clear previous entries
-  variableTableBody.innerHTML = '';
+    if (stepIndex < responseData.length) {
+        const step = responseData[stepIndex];
+        for (const variableName in step.variables) {
+            const variable = step.variables[variableName];
+            const row = `<tr>
+                          <td>${variableName}</td>
+                          <td>${variable.value}</td>
+                          <td>${variable.type}</td>
+                          <td>Global</td>
+                        </tr>`;
+            variableTableBody.innerHTML += row;
+        }
 
-  // Append new entries
-  for (const variableName in step) {
-    const variable = step[variableName];
-    const row = `<tr>
-                  <td>${variableName}</td>
-                  <td>${variable.value}</td>
-                  <td>${variable.type}</td>
-                  <td>Global</td>
-                </tr>`;
-    variableTableBody.innerHTML += row;
-  }
+        const codeLine = step.code.replace("print(", "").replace("status here", "").trim();
+        const codeLineElement = document.createElement('p');
+        codeLineElement.textContent = `Executed code: ${codeLine}`;
+        outputArea.appendChild(codeLineElement);
 
-  stepIndex++;
+        const outputLines = step.output;
+        outputLines.forEach(output => {
+            const outputLineElement = document.createElement('p');
+            outputLineElement.textContent = output;
+            outputArea.appendChild(outputLineElement);
+        });
 
-  // Stop when all steps are displayed
-  if (stepIndex < responseData.length) {
-    setTimeout(displayStepByStep, 2000); // 2-second delay
-  }
+        stepIndex++;
+        setTimeout(() => displayStepByStep(responseData), 2000); // 2-second delay
+    }
 }
+

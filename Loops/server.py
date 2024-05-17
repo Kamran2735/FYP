@@ -9,18 +9,39 @@ CORS(app)
 class VariableTracker:
     def __init__(self):
         self.variables = []
-        self.ignored_variables = set(dir(sys.modules[__name__]))
+        self.code_lines = []
+        self.outputs = []
 
-    def track_variable_values(self, values):
-        # Ignore specific variables and built-in names
-        ignored_names = self.ignored_variables.union({'tracker', 'original_stdout'})
-        tracked_values = {name: (type(value).__name__, value) for name, value in values.items() if name not in ignored_names and not name.startswith('__')}
+    def track_variable_values(self, values, code_line):
+        ignored_names = {'tracker', 'original_stdout', 'request', 'app', 'sys', 'StringIO', 'CORS', 'Flask', 'VariableTracker', 'OutputInterceptor'}
+        tracked_values = {}
+        for name, value in values.items():
+            if name not in ignored_names and not name.startswith('__'):
+                try:
+                    # Attempt to serialize the value to ensure it's serializable
+                    _ = jsonify({name: value})
+                    tracked_values[name] = (type(value).__name__, value)
+                except TypeError:
+                    # If not serializable, skip this variable
+                    pass
         self.variables.append(tracked_values)
+        self.code_lines.append(code_line)
+        self.outputs.append([])
+        
+    def add_output(self, text):
+        if self.outputs:
+            self.outputs[-1].append(text.strip())
+        else:
+            self.outputs.append([text.strip()])
 
-    def get_tracked_variables(self):
+    def get_tracked_data(self):
         result = []
-        for i, values in enumerate(self.variables, start=1):
-            result.append({name: {"type": var_type, "value": value} for name, (var_type, value) in values.items()})
+        for values, code_line, output in zip(self.variables, self.code_lines, self.outputs):
+            result.append({
+                'variables': {name: {"type": var_type, "value": value} for name, (var_type, value) in values.items()},
+                'code': code_line,
+                'output': output
+            })
         return result
 
 class OutputInterceptor:
@@ -30,44 +51,42 @@ class OutputInterceptor:
         self.buffer = StringIO()
 
     def write(self, text):
-        # Capture output in buffer
         self.buffer.write(text)
-        self.original_stdout.write(text)  # Ensure the text is still printed to the console
-        if "status here" in text:
-            # Track variable values at print statement
-            self.tracker.track_variable_values(globals().copy())
+        self.original_stdout.write(text)
+        if "line" in text:
+            self.tracker.track_variable_values(globals().copy(), text)
+        elif "print" in text:  # Check for lines containing print statement
+            self.tracker.add_output(text.strip())
 
     def flush(self):
-        # Flush buffer to original stdout
         self.buffer.seek(0)
         self.original_stdout.write(self.buffer.read())
         self.original_stdout.flush()
 
     def __getattr__(self, attr):
-        # Pass other attribute calls to the original stdout
         return getattr(self.original_stdout, attr)
+
+
+
 
 @app.route('/execute', methods=['POST'])
 def execute_code():
     code = request.json.get('code', '')
-    # Initialize variable tracker for this request
     tracker = VariableTracker()
     
-    # Replace sys.stdout with the interceptor
     original_stdout = sys.stdout
     sys.stdout = OutputInterceptor(tracker, original_stdout)
     
     try:
-        # Execute the user code
         exec(code, globals())
     except Exception as e:
         return jsonify({'error': str(e)})
     finally:
-        # Restore original stdout
         sys.stdout = original_stdout
     
-    # Return tracked variable values
-    return jsonify(tracker.get_tracked_variables())
+    response_data = tracker.get_tracked_data()
+    
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     app.run(debug=True)

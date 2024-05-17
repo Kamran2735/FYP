@@ -11,7 +11,7 @@
     <h1>Code Runner</h1>
     <div class="editor">
       <textarea id="codeInput" placeholder="Enter your code here..."></textarea>
-      <button onclick="preprocessPythonCode()">Run</button>
+      <button onclick="runCode()">Run</button>
       <button id="stepButton" onclick="stepCode()" disabled>Step</button>
     </div>
     <div class="output">
@@ -34,7 +34,21 @@
         </tbody>
       </table>
     </div>
+    <svg id='svg' class="figure-svg">
+      <path id="initial" stroke='red' stroke-width='3' fill = 'none' d="M 150 400 L 400 400 C 600 250 200 250 400 400 L 650 400"></path>
+      <path id="startPath" fill = 'none' d="M 150 400 L 400 400"></path>
+      <path id="loopPath" fill = 'none' d="M 400 400 L 400 400 C 600 250 200 250 400 400"></path>
+      <path id="endPath" fill = 'none' d="M 400 400 L 650 400"></path>
+      <!-- You can add other path elements here if needed -->
+      <circle id="animatedObject" class="animated-object" cx="0" cy="0" r="10"></circle>
+    </svg>
+    </svg>
   </div>
+
+  <!-- Include Anime.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script src="script.js"></script>
+  <script src="animation.js"></script>
+
 </body>
 </html>

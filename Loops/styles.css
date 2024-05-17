@@ -79,4 +79,13 @@ body {
   .highlight {
     background-color: #73ee7d; /* Light red background for changed values */
   }
+
+  .figure-svg {
+    background-color: antiquewhite;
+    width: 800px; /* Adjust the width as needed */
+    height: 500px; /* Adjust the height as needed */
+  }
+  .animated-object {
+    fill: red; /* Fill color of the object */
+  }
   
