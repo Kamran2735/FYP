@@ -137,7 +137,7 @@ function runCode() {
     }
 
     const preprocessedCode = preprocessPythonCode(codeInput);
-
+   console.log(preprocessedCode)
     fetch('http://localhost:5000/execute', {
         method: 'POST',
         headers: {

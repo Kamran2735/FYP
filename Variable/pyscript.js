@@ -125,9 +125,11 @@ async function runCode() {
 
 
 async function updateVariableTable(responseArray) {
+  console.log(responseArray)
   const variableTableBody = document.getElementById('variableTableBody');
   const outputField = document.getElementById('output');
-
+  const codeLineElement = document.createElement('p');
+  outputField.appendChild(codeLineElement);
   // Define a function to clear the variable table
   const clearVariableTable = () => {
     // Clear existing table content
@@ -164,8 +166,14 @@ async function updateVariableTable(responseArray) {
 
       // Compare the current value with the previous one
       if (previousVariable) {
-        // Highlight the value cell if it's different
-        if (previousVariable.value !== variable.value) {
+
+        if(previousVariable.type === 'list' && variable.type === 'list'){
+         const compare = _.isEqual(previousVariable.value, variable.value)
+         if (!compare){
+          valueCell.classList.add('highlight')
+         }
+        }
+        else if( previousVariable.type !== 'list' && variable.type !== 'list' && previousVariable.value !== variable.value) {
           valueCell.classList.add('highlight')
         }
         if (previousVariable.type !== variable.type) {
@@ -178,6 +186,7 @@ async function updateVariableTable(responseArray) {
         typeCell.classList.add('highlight');
         scopeCell.classList.add('highlight');
       }
+      
 
       // Append cells to the row
       variableRow.appendChild(nameCell);
@@ -205,12 +214,13 @@ async function updateVariableTable(responseArray) {
       // Break the loop
       break;
     }
+    codeLineElement.innerHTML = `Executed code: ${response.code} <br>`;
 
     // Check if the response contains any variables
     if (response.variables && response.variables.length > 0) {
       // Add a row for the response output if it's not an empty string
       if (response.output.trim() !== '') {
-        outputField.innerHTML = response.output.replace(/\n/g, '<br>'); // Display the output with line breaks
+        codeLineElement.innerHTML += response.output.replace(/\n/g, '<br>'); // Display the output with line breaks
       }
       
       // Add variables to the table

@@ -40,7 +40,7 @@ class VariableTracker:
         pattern = r'print\s*\((.*)\)'
         match = re.search(pattern, text.strip()).group(1).strip()
         result = eval(match,local_vars)
-        print(result)
+
         if self.outputs:
             self.outputs[-1].append(result)
         else:

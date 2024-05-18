@@ -39,7 +39,6 @@ def get_conditional_statements(code):
     elif_block_executed = False
     else_block_executed = False
     output_capture = StringIO()
-    # sys.stdout = output_capture
     
     variables = {}
     exec(code, {}, variables)
@@ -102,7 +101,6 @@ def get_conditional_statements(code):
               data['output'] =  captured_output
              except Exception as e:
               data['output'] = f"Error: {e}"
-            
             step = step + 1;
             conditional_statements.append(data)
     return conditional_statements
