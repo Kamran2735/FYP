@@ -161,7 +161,7 @@ let stepIndex = 0;
 function displayStepByStep(responseData) {
     console.log(responseData);
     const variableTableBody = document.getElementById('variableTableBody');
-    const outputArea = document.getElementById('outputArea');
+    const outputArea = document.getElementById('output');
 
     variableTableBody.innerHTML = '';
     outputArea.innerHTML = '';
