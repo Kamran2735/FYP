@@ -20,7 +20,7 @@ class VariableTracker:
         self.outputs = []
             
         
-    def track_variable_values(self, values, code_line):
+    def track_variable_values(self, values, code_line,local_vars):
         ignored_names = {'tracker', 'original_stdout', 'request', 'app', 'sys', 'StringIO', 'CORS', 'Flask', 'VariableTracker', 'OutputInterceptor'}
         tracked_values = {}
         for name, value in values.items():
@@ -35,12 +35,18 @@ class VariableTracker:
         self.variables.append(tracked_values)
         self.code_lines.append(code_line)
         self.outputs.append([])
+        if code_line.count("line")>1:
+          pattern = r'print\s*\((.*)\)'
+          match = re.search(pattern, code_line).group(1).strip()
+          result = eval(match,local_vars)
+          self.outputs[-1].append(result)
         
     def add_output(self, text, local_vars):
         pattern = r'print\s*\((.*)\)'
         match = re.search(pattern, text.strip()).group(1).strip()
         result = eval(match,local_vars)
-
+        
+        
         if self.outputs:
             self.outputs[-1].append(result)
         else:
@@ -48,7 +54,6 @@ class VariableTracker:
 
     def get_tracked_data(self):
         result = []
-      
         for values, code_line, output in zip(self.variables, self.code_lines, self.outputs):
             result.append({
                 'variables': {name: {"type": var_type, "value": value} for name, (var_type, value) in values.items()},
@@ -69,9 +74,9 @@ class OutputInterceptor:
     def write(self, text):
         self.buffer.write(text)
         self.original_stdout.write(text)
-        if "line" in text and "print" not in text:
-            self.tracker.track_variable_values(self.local_vars.copy(), text.strip())
-        elif "print" in text:  # Check for lines containing print statement
+        if text.count("line")>1 or ("line" in text and "print" not in text):
+            self.tracker.track_variable_values(self.local_vars.copy(), text.strip(),self.local_vars.copy())
+        elif "print" in text: 
             self.tracker.add_output(text.strip(),self.local_vars.copy())
 
     def flush(self):
