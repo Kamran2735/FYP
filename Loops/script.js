@@ -239,25 +239,6 @@ async function updateVariableTable(responseArray) {
     }
   }
 
-
-
-
-
-//   function changePathColorAndWidth(pathId, newColor) {
-//     var path = document.getElementById(pathId);
-//     if (path) {
-//         anime({
-//             targets: path,
-//             strokeDashoffset: [anime.setDashoffset, 0],
-//             easing: 'easeInOutSine',
-//             duration: 1500,
-//             stroke: newColor // Change stroke color
-//         });
-//     } else {
-//         console.error('Path not found with id:', pathId);
-//     }
-// }
-
 function changePathColorAndWidth(pathId, newColor, newStrokeWidth) {
     var path = document.getElementById(pathId);
     if (path) {
