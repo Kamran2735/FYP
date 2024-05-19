@@ -11,12 +11,80 @@
         <h1>Conditional Visualization</h1>
         <textarea id="codeInput" placeholder="Enter your Python code here..."></textarea>
         <button onclick="runExecution()">Visualize Conditionals</button>
-        <div id="visualization-container">
-            <svg id="visualization" width="800" height="500"></svg> <!-- Added an SVG element with appropriate dimensions and ID -->
-        </div>
+        <svg id='svg' class="figure-svg">
+            <!-- For 2 conditionals: -->
+            <path id= "initial" stroke='red' stroke-width='15' fill = 'none' d="M 100 250 L 400 250 L 600 100 L 400 250 L 600 400"></path>
+            <path id="startPath" d="M 100 250 L 400 250"></path>
+            <path id="firstPath" d="M 400 250 L 600 100"></path>
+            <path id="secondPath" d="M 400 250 L 600 400"></path>
+            <!-- For 3 conditionals: -->    
+            <path id= "initial" stroke='red' stroke-width='15' fill = 'none' d="M 100 250 L 400 250 L 600 100 L 400 250 L 650 250 L 400 250 L 600 400"></path>
+            <path id="startPath" d="M 100 250 L 400 250"></path>
+            <path id="firstPath" d="M 400 250 L 600 100"></path>
+            <path id="secondPath" d="M 400 250 L 650 250"></path>
+            <path id="thirdPath" d="M 400 250 L 600 400"></path>
+            <!-- For 4 conditionals: -->  
+            <path id= "initial" stroke='red' stroke-width='15' fill = 'none' d="M 100 250 L 400 250 L 580 50 L 400 250 L 650 150 L 400 250 L 400 250 L 650 350 L 400 250 L 580 450"></path>
+            <path id="startPath" d="M 100 250 L 400 250"></path>
+            <path id="firstPath" d="M 400 250 L 580 50 "></path>
+            <path id="secondPath" d="M 400 250 L 650 150"></path>
+            <path id="thirdPath" d="400 250 L 650 350"></path>
+            <path id="FourthPath" d="M 400 250 L 580 450"></path>
+            <!-- For 5 conditionals: -->  
+            <path id= "initial" stroke='red' stroke-width='15' fill = 'none' d="M 100 250 L 400 250 L 580 50 L 400 250 L 650 150 L 400 250 L 650 250 L 400 250 L 650 350 L 400 250 L 580 450"></path>
+            <path id="startPath" d="M 100 250 L 400 250"></path>
+            <path id="firstPath" d="M 400 250 L 580 50 "></path>
+            <path id="secondPath" d="M 400 250 L 650 150"></path>
+            <path id="secondPath" d="M 400 250 L 650 250"></path>
+            <path id="fourthPath" d="400 250 L 650 350"></path>
+            <path id="fifthPath" d="M 400 250 L 580 450"></path>
+            <circle id="animatedObject" class="animated-object" cx="0" cy="0" r="10"></circle>
+          </svg>
     </div>
-    <script src="script.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+
+    var startPath = anime.path('#startPath');
+    var endPath = anime.path('#secondPath');
+
+    var drawFigure = anime({
+        targets: '.figure-svg path',
+        strokeDashoffset: [anime.setDashoffset, 0],
+        easing: 'easeInOutSine',
+        duration: 1500,
+        delay: function(el, i) { return i * 250 },
+        direction: 'alternate',
+        loop: false,
+        complete: startObjectAnimations // Start object animations after drawing
+    });
+
+    var startAnimation, endAnimation;
+
+    // Function to start object animations
+    function startObjectAnimations() {
+        startAnimation = anime({
+            targets: '#animatedObject',
+            translateX: startPath('x'),
+            translateY: startPath('y'),
+            easing: 'linear',
+            duration: 1000,
+            complete: function() {
+                setTimeout(function() {
+                    endAnimation.restart();
+                }, 1000); // Delay 1 second after startAnimation completes
+            }
+        });
+
+        endAnimation = anime({
+            targets: '#animatedObject',
+            translateX: endPath('x'),
+            translateY: endPath('y'),
+            easing: 'linear',
+            duration: 1000,
+            autoplay: false // Make sure endAnimation doesn't play automatically
+        });
+    }
+
+    </script>
 </html>

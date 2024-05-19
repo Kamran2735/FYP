@@ -11,12 +11,28 @@
     <h1>Code Runner</h1>
     <div class="editor">
       <textarea id="codeInput" placeholder="Enter your code here..."></textarea>
-      <button onclick="runCode()">Run</button>
-      <button id="stepButton" onclick="stepCode()" disabled>Step</button>
+      <button id ="run" onclick="runCode()">Run</button>
     </div>
     <div class="output">
-      <h2>Output:</h2>
-      <div id="output"></div>
+      <h2>Execution:</h2>
+      <div id="execution"></div>
+      <div class="output">
+        <h2>Output:</h2>
+        <div id="output"></div>
+    </div>
+    <div id="svgContainer">
+      <svg id='svg' class="figure-svg">
+        <path id="initial" stroke='#4B0082' stroke-width='5' fill='none' d="M 250 200 L 500 200 C 700 50 300 50 500 200 L 750 200"></path>
+        <path id="startPath" fill='none' d="M 250 200 L 500 200"></path>
+        <path id="loopPath" fill='none' d="M 500 200 C 700 50 300 50 500 200"></path>
+        <path id="endPath" fill='none' d="M 500 200 L 750 200"></path>
+        <!-- Text elements indicating start, loop, and end positions -->
+        <text id= "startText" x="260" y="195" font-family="Arial" font-size="24" fill=#e917c6>Start</text>
+        <text id= "loopText"x="475" y="225" font-family="Arial" font-size="24" fill=#e917c6>Loop</text>
+        <text id= "endText"x="700" y="195" font-family="Arial" font-size="24" fill=#e917c6>End</text>
+        <!-- You can add other path elements here if needed -->
+        <circle id="animatedObject" class="animated-object" cx="0" cy="0" r="10"></circle>
+      </svg>
     </div>
     <div class="variables">
       <h2>Variables:</h2>
@@ -34,21 +50,12 @@
         </tbody>
       </table>
     </div>
-    <svg id='svg' class="figure-svg">
-      <path id="initial" stroke='red' stroke-width='3' fill = 'none' d="M 150 400 L 400 400 C 600 250 200 250 400 400 L 650 400"></path>
-      <path id="startPath" fill = 'none' d="M 150 400 L 400 400"></path>
-      <path id="loopPath" fill = 'none' d="M 400 400 L 400 400 C 600 250 200 250 400 400"></path>
-      <path id="endPath" fill = 'none' d="M 400 400 L 650 400"></path>
-      <!-- You can add other path elements here if needed -->
-      <circle id="animatedObject" class="animated-object" cx="0" cy="0" r="10"></circle>
-    </svg>
-    </svg>
   </div>
 
   <!-- Include Anime.js from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  <script src="script.js"></script>
   <script src="animation.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>

@@ -1,97 +1,142 @@
-body {
-  font-family: Arial, sans-serif;
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(to bottom right, #E0B0FF, #4B0082);
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+nav {
+  width: 100%;
+  background-color: #4B0082;
+  padding: 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.navbar .logo {
+  margin-left: 40%;
+  font-size: 1.5em;
+  color: #FFF0F5;
+  font-weight: bold;
 }
 
 .container {
-  max-width: 800px;
-  margin: 20px auto;
+  background: rgba(255, 240, 245, 0.8);
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  margin: 100px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 1000px;
 }
 
 h1 {
   text-align: center;
+  margin-bottom: 20px;
+  color: #4B0082;
 }
 
-.editor {
+.editor, .output, .variables {
   margin-bottom: 20px;
 }
 
-textarea {
+.editor textarea {
+  font-size: 1em;
+  font-weight: bold;
+  background: linear-gradient(to bottom right,#9d30eb,#E0B0FF );
+  color: whitesmoke;
   width: 100%;
   height: 200px;
   padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: 1px solid #9370DB;
+  border-radius: 4px;
   resize: vertical;
 }
 
-button {
+.editor button {
   display: block;
+  width: 100%;
+  padding: 10px;
   margin-top: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #007bff;
-  color: #fff;
+  background: linear-gradient(to left, #4B0082, #9370DB);
+  color: #FFF0F5;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: color 0.4s ease-in;
 }
 
-button:hover {
-  background-color: #0056b3;
+.editor button:hover {
+  background: linear-gradient(to left, #9370DB, #4B0082);
+  transition: 0.4s ease-in;
 }
 
-.output, .variables {
-  margin-top: 20px;
+.output h2, .variables h2 {
+  color: #4B0082;
 }
 
-h2 {
-  margin-bottom: 10px;
+#execution {
+  background: linear-gradient(to bottom right, #E0B0FF, #9d30eb);
+  padding: 10px;
+  border: 1px solid #9370DB;
+  border-radius: 4px;
+  min-height: 40px;
+  font-weight: bold;
 }
 
-table {
+#output {
+  background: linear-gradient(to bottom right, #E0B0FF, #9d30eb);
+  padding: 10px;
+  border: 1px solid #9370DB;
+  border-radius: 4px;
+  min-height: 100px;
+  font-weight: bold;
+}
+
+#variableTable {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
 }
 
-th, td {
-  border: 1px solid #ccc;
+#variableTable th, #variableTable td {
+  border: 1px solid #9370DB;
   padding: 8px;
   text-align: left;
 }
 
-th {
-  background-color: #f2f2f2;
+#variableTable th {
+  background-color: #4B0082;
+  color: #FFF0F5;
 }
 
+#variableTable tbody tr:nth-child(even) {
+  background-color: #E6E6FA;
+}
+
+/* New styles to incorporate */
 .new-variable td {
-  background-color: #73ee7d; /* Light blue background for new variables */
+  background: linear-gradient(to bottom right, #E0B0FF, #9d30eb); /* Light green background for new variables */
 }
 
 .highlight {
-  background-color: #73ee7d; /* Light red background for changed values */
-}
-/* New styles for code display */
-.code-display {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: auto;
-  padding: 10px;
-}
-
-.code-line {
-  display: block;
-  white-space: pre;
-}
-
-.highlighted {
-  background-color: lightgreen;
+ background: linear-gradient(to bottom right, #E0B0FF, #9d30eb); /* Light green background for changed values */
 }

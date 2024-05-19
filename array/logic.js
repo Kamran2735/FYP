@@ -3,6 +3,7 @@ const codeAreaPara = document.querySelector("#codeArea");
 const arrSize = document.querySelector("#arrSize");
 const btnArrSize = document.querySelector("#btnArrSize");
 const btnAddElement = document.querySelector("#btnAddElement");
+let arrayInitialized = false;
 let objArr = [];
 let dataType = 'int'; // Store the selected data type
 let currentDraggedElement = null;
@@ -253,11 +254,10 @@ for (let i = 0; i < inputValue; i++) {
     tempPlayEl.addEventListener('drop', drop);
     tempPlayEl.addEventListener('dragend', dragEnd);
 }
-
+arrayInitialized = true;
 }
 
 
-// Function to delete the selected element
 function deleteElement(container) {
     const index = Array.from(playAreaEls.children).indexOf(container); // Get index of container in playAreaEls
     if (index !== -1) {
@@ -265,13 +265,72 @@ function deleteElement(container) {
         container.remove(); // Remove element from DOM
         
         // Update indexes of all elements
-        objArr.forEach((obj, i) => {
-            obj.playEl.previousElementSibling.innerText = i; // Update index text
+        const indexParagraphs = playAreaEls.querySelectorAll('.inputCon p');
+        indexParagraphs.forEach((paragraph, i) => {
+            paragraph.innerText = i; // Update index text
         });
 
         updateCodeArea(); // Update code area after deletion
     }
 }
+
+function deleteElementByIndexOrValue(indexOrValue) {
+    // Convert index or value to the appropriate type
+    const index = parseInt(indexOrValue); // Parse as integer
+    const value = isNaN(index) ? indexOrValue : index; // If it's not a number, keep it as a string
+
+    if (typeof value === 'number') {
+        // Delete element by index
+        deleteElementByIndex(index);
+    } else {
+        // Delete element by value
+        deleteElementByValue(value);
+    }
+}
+
+function deleteElementByIndex(index) {
+    // Find the index of the element with the given index
+    if (index >= 0 && index < objArr.length) {
+        const deletedElement = objArr.splice(index, 1)[0]; // Remove the element from the array
+        if (deletedElement && deletedElement.playEl) {
+            deletedElement.playEl.parentElement.remove(); // Remove the element's container from the DOM
+        }
+
+        // Update indexes of all elements
+        const indexParagraphs = playAreaEls.querySelectorAll('.inputCon p');
+        indexParagraphs.forEach((paragraph, i) => {
+            paragraph.innerText = i; // Update index text
+        });
+
+        updateCodeArea(); // Update code area after deletion
+    }
+}
+
+function deleteElementByIndex(index) {
+    // Find the index of the element with the given index
+    if (index >= 0 && index < objArr.length) {
+        const deletedElement = objArr.splice(index, 1)[0]; // Remove the element from the array
+
+        // Remove the container from the play area
+        if (deletedElement && deletedElement.container) {
+            deletedElement.container.remove();
+        }
+
+        // Remove the code element from the code area
+        if (deletedElement && deletedElement.codeEl) {
+            deletedElement.codeEl.remove();
+        }
+
+        // Update indexes of all elements
+        const indexParagraphs = playAreaEls.querySelectorAll('.inputCon p');
+        indexParagraphs.forEach((paragraph, i) => {
+            paragraph.innerText = i; // Update index text
+        });
+
+        updateCodeArea(); // Update code area after deletion
+    }
+
+}   
 
 // Function to update the code area content and rearrange brackets
 function updateCodeArea() {
@@ -438,11 +497,8 @@ function createRandomArray() {
         tempPlayEl.addEventListener('drop', drop);
         tempPlayEl.addEventListener('dragend', dragEnd);
     }
+    arrayInitialized = true;
 }
-
-
-
-
 
 
 // Event listener for the "Add Element" button
@@ -455,812 +511,262 @@ btnAddElement.addEventListener('click', () => {
 });
 
 // Function to add a new input item and its corresponding code area element
-function addElement() {
-    // Create a new input element
-    const newInput = document.createElement('input');
-    newInput.type = dataType; // Set the type based on the selected data type
-    newInput.classList.add('inputItems'); 
-    newInput.draggable = true; // Make draggable
+function addElement(value = null) {
+    if (arrayInitialized === true) {
+        // Create a new input element
+        const newInput = document.createElement('input');
+        newInput.type = dataType; // Set the type based on the selected data type
+        newInput.classList.add('inputItems'); 
+        newInput.draggable = true; // Make draggable
+        
+        // If value is provided, set it to the input element
+        if (value !== null) {
+            newInput.value = value;
+        }
 
-    // Create a new paragraph element for index
-    const newIndex = document.createElement('p');
-    newIndex.innerText = objArr.length; // Set the index as the length of the array
+        // Create a new paragraph element for index
+        const newIndex = document.createElement('p');
+        newIndex.innerText = objArr.length; // Set the index as the length of the array
 
-    // Create a new container for the input item, index, and delete button
-    const newContainer = document.createElement('div');
-    newContainer.classList.add('inputCon');
-    newContainer.append(newInput, newIndex); // Append input and index to the container
+        // Create a new container for the input item, index, and delete button
+        const newContainer = document.createElement('div');
+        newContainer.classList.add('inputCon');
+        newContainer.append(newInput, newIndex); // Append input and index to the container
 
-    // Adding delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.innerText = 'x';
-    deleteBtn.classList.add('deleteBtn');
-    deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
+        // Adding delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerText = 'x';
+        deleteBtn.classList.add('deleteBtn');
+        deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
 
-    // Event listener to show delete button on hover
-    newContainer.addEventListener('mouseenter', () => {
-        deleteBtn.style.visibility = 'visible';
-    });
+        // Event listener to show delete button on hover
+        newContainer.addEventListener('mouseenter', () => {
+            deleteBtn.style.visibility = 'visible';
+        });
 
-    // Event listener to hide delete button on mouse leave
-    newContainer.addEventListener('mouseleave', () => {
-        deleteBtn.style.visibility = 'hidden';
-    });
+        // Event listener to hide delete button on mouse leave
+        newContainer.addEventListener('mouseleave', () => {
+            deleteBtn.style.visibility = 'hidden';
+        });
 
-    // Event listener to delete element on button click
-    deleteBtn.addEventListener('click', () => {
-        deleteElement(newContainer); // Pass the container div to deleteElement function
-    });
+        // Event listener to delete element on button click
+        deleteBtn.addEventListener('click', () => {
+            deleteElement(newContainer); // Pass the container div to deleteElement function
+        });
 
-    newContainer.append(deleteBtn); // Append delete button to container
+        newContainer.append(deleteBtn); // Append delete button to container
 
-    // Add the new input item to the play area
-    playAreaEls.appendChild(newContainer);
+        // Add the new input item to the play area
+        playAreaEls.appendChild(newContainer);
 
-    // Create a new span element for the code area
-    const newCodeEl = document.createElement('span');
-    newCodeEl.class = `codeEl${objArr.length + 1}`; // Set the ID based on the array length
-    newCodeEl.innerText = "0"; // Initialize with '0'
+        // Create a new span element for the code area
+        const newCodeEl = document.createElement('span');
+        newCodeEl.class = `codeEl${objArr.length + 1}`; // Set the ID based on the array length
+        newCodeEl.innerText = value !== null ? value : "0"; // Initialize with '0' or the provided value
 
-    // Update the objArr with the new input and code elements
-    const newObj = { playEl: newInput, codeEl: newCodeEl };
-    objArr.push(newObj);
+        // Update the objArr with the new input and code elements
+        const newObj = { playEl: newInput, codeEl: newCodeEl };
+        objArr.push(newObj);
 
-    // Add event listeners for input changes, click events, and drag events
-    addInputListeners(newObj); // Add input listeners to the new input element
-    addClickListeners(newObj);
-    newInput.addEventListener('dragstart', dragStart);
-    newInput.addEventListener('dragover', dragOver);
-    newInput.addEventListener('drop', drop);
-    newInput.addEventListener('dragend', dragEnd);
+        // Add event listeners for input changes, click events, and drag events
+        addInputListeners(newObj); // Add input listeners to the new input element
+        addClickListeners(newObj);
+        newInput.addEventListener('input', () => {
+            updateCodeArea(); // Call updateCodeArea function when input value changes
+        });
+        newInput.addEventListener('dragstart', dragStart);
+        newInput.addEventListener('dragover', dragOver);
+        newInput.addEventListener('drop', drop);
+        newInput.addEventListener('dragend', dragEnd);
 
-    // Insert comma if needed
-    if (objArr.length > 1) {
-        const comma = document.createElement('span');
-        comma.innerText = ', ';
-        codeAreaPara.insertBefore(comma, codeAreaPara.lastChild.previousSibling); // Insert comma before the last but one element
+        // Insert comma if needed
+        if (objArr.length > 1) {
+            const comma = document.createElement('span');
+            comma.innerText = ', ';
+            codeAreaPara.insertBefore(comma, codeAreaPara.lastChild.previousSibling); // Insert comma before the last but one element
+        }
+
+        // Update the text content of codeEl and rearrange brackets
+        updateCodeArea();  
+    } else {
+        alert('Initialize array First.'); 
     }
-
-    // Update the text content of codeEl and rearrange brackets
-    updateCodeArea();   
 }
 
-
-
-
-
-
-// function createArr() {
-//     const inputValue = parseInt(arrSize.value);
-//     dataType = arrDatatype.value; // Get the selected data type
-
-//     // Check if the input value is greater than 10
-//     if (inputValue > 10) {
-//         alert("Max 10 elements allowed. Please re-enter a value less than or equal to 10.");
-//         arrSize.value = ""; // Clear the input field
-//         return; // Exit the function
-//     }
-
-//     // Check if the array is already initialized
-//     if (objArr.length > 0) {
-//         const replaceArray = confirm("An array is already initialized. Do you want to replace it?");
-//         if (replaceArray) {
-//             // If yes, remove the existing array
-//             objArr.forEach(obj => obj.playEl.parentElement.remove());
-//             objArr.length = 0; // Clear the array
-//         } else {
-//             return; // Exit the function without adding a new array
-//         }
-//     }
-
-//     // Clear the codeArea
-//     codeAreaPara.innerHTML = "";
-
-//     // Update the declaration of 'let array = []' based on the new input value and data type
-//     const arrayDeclaration = document.createElement("span");
-//     arrayDeclaration.innerText = `let array = [ `;
-//     codeAreaPara.append(arrayDeclaration);
-
-// // Inside the createArr function
-// for (let i = 0; i < inputValue; i++) {
-//     // Create container element
-//     const tempCon = document.createElement("div");
-//     tempCon.classList.add("inputCon");
-
-//     // Creating input element in the playarea
-//     const tempPlayEl = document.createElement("input");
-//     tempPlayEl.type = dataType;
-//     tempPlayEl.id = `playEl${i + 1}`;
-//     tempPlayEl.draggable = true;
-//     tempPlayEl.classList.add("inputItems");
-
-//     // Adding index for the new element
-//     const tempIndex = document.createElement("p");
-//     tempIndex.innerText = i;
-
-//     // Adding delete button for the new element
-//     const deleteBtn = document.createElement('button');
-//     deleteBtn.innerText = 'x';
-//     deleteBtn.classList.add('deleteBtn');
-//     deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
-
-//     // Event listener to show delete button on hover
-//     tempCon.addEventListener('mouseenter', () => {
-//         deleteBtn.style.visibility = 'visible';
-//     });
-
-//     // Event listener to hide delete button on mouse leave
-//     tempCon.addEventListener('mouseleave', () => {
-//         deleteBtn.style.visibility = 'hidden';
-//     });
-
-//     // Event listener to delete element on button click
-//     deleteBtn.addEventListener('click', () => {
-//         deleteElement(tempCon); // Pass the container div to deleteElement function
-//     });
-
-//     // Add buttons for adding elements on both sides of each input element
-//     const addLeftButton = document.createElement('button');
-//     addLeftButton.innerText = '+';
-//     addLeftButton.classList.add('addElementButton');
-//     addLeftButton.addEventListener('click', () => {
-//         addElementToLeft(tempCon); // Pass the container div
-//     });
-
-//     const addRightButton = document.createElement('button');
-//     addRightButton.innerText = '+';
-//     addRightButton.classList.add('addElementButton');
-//     addRightButton.addEventListener('click', () => {
-//         addElementToRight(tempCon); // Pass the container div
-//     });
-
-//     // Append buttons and other elements to container
-//     tempCon.append(tempPlayEl, tempIndex, addLeftButton, addRightButton, deleteBtn);
-//     // Update event listeners for hover and click events on input elements
-//     updateInputListeners(tempPlayEl);
-
-//     // Append the container to the playAreaEls
-//     playAreaEls.append(tempCon);
-
-
-
-//     // Creating span element in the code area
-//     const tempCodeEl = document.createElement("span");
-//     tempCodeEl.id = `codeEl${i + 1}`;
-//     tempCodeEl.innerText = "0";
-//     codeAreaPara.append(tempCodeEl);
-
-//     // Adding Comma after every span in codeArea and at the end closing square bracket
-//     if (i !== inputValue - 1) {
-//         const tempComma = document.createElement("span");
-//         tempComma.innerText = " , ";
-//         codeAreaPara.append(tempComma);
-//     } else {
-//         const tempBracket = document.createElement("span");
-//         tempBracket.innerText = " ]";
-//         codeAreaPara.append(tempBracket);
-//     }
-
-
-//     // Making an object of input and span for linking them together and adding the object in the objArr
-//     const tempObj = { playEl: tempPlayEl, codeEl: tempCodeEl };
-//     objArr.push(tempObj);
-
-
-//     addLeftButton.addEventListener('click', () => {
-//         addElementToLeft(tempCon);
-//     });
-//     addRightButton.addEventListener('click', () => {
-//         addElementToRight(tempCon);
-//     });
-
-//     // Add event listeners for input changes, click events, and drag events
-//     addInputListeners(tempObj);
-//     addClickListeners(tempObj);
-//     tempPlayEl.addEventListener('dragstart', dragStart);
-//     tempPlayEl.addEventListener('dragover', dragOver);
-//     tempPlayEl.addEventListener('drop', drop);
-//     tempPlayEl.addEventListener('dragend', dragEnd);
-// }
-// }
-
-
-// // Event listener for creating elements on the left side
-// function addElementToLeft(container) {
-//     const index = Array.from(playAreaEls.children).indexOf(container); // Get index of container in playAreaEls
-
-//     // Creating input element in the playarea
-//     const tempPlayEl = document.createElement("input");
-//     tempPlayEl.type = dataType;
-//     tempPlayEl.id = `playEl${index}`;
-//     tempPlayEl.draggable = true;
-//     tempPlayEl.classList.add("inputItems");
-
-//     // Adding index for the new element
-//     const tempIndex = document.createElement("p");
-//     tempIndex.innerText = index;
-
-//     // Adding delete button for the new element
-//     const deleteBtn = document.createElement('button');
-//     deleteBtn.innerText = 'x';
-//     deleteBtn.classList.add('deleteBtn');
-//     deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
-
-//     // Event listener to show delete button on hover
-//     container.addEventListener('mouseenter', () => {
-//         deleteBtn.style.visibility = 'visible';
-//     });
-
-//     // Event listener to hide delete button on mouse leave
-//     container.addEventListener('mouseleave', () => {
-//         deleteBtn.style.visibility = 'hidden';
-//     });
-
-//     // Event listener to delete element on button click
-//     deleteBtn.addEventListener('click', () => {
-//         deleteElement(container); // Pass the container div to deleteElement function
-//     });
-
-//     const newContainer = document.createElement("div");
-//     newContainer.classList.add("inputCon");
-
-//     // Append input, index, and delete button to the new container
-//     newContainer.append(tempPlayEl, tempIndex, deleteBtn);
-
-//     // Insert the new container before the current container
-//     container.parentElement.insertBefore(newContainer, container);
-
-//     // Update indexes of all elements
-//     objArr.forEach((obj, i) => {
-//         obj.playEl.previousElementSibling.innerText = i; // Update index text
-//     });
-
-//     updateCodeArea(); // Update code area after addition
-// }
-
-// // Event listener for creating elements on the left side
-// btnAddElement.addEventListener('click', () => {
-//     const firstContainer = playAreaEls.children[0]; // Get the first container in playAreaEls
-//     addElementToLeft(firstContainer); // Pass the first container to the function
-// });
-
-
-// // Event listener for creating elements on the right side
-// function addElementToRight(container) {
-//     const index = Array.from(playAreaEls.children).indexOf(container) + 1; // Get index of container in playAreaEls and add 1 for the right side
-
-//     // Creating input element in the playarea
-//     const tempPlayEl = document.createElement("input");
-//     tempPlayEl.type = dataType;
-//     tempPlayEl.id = `playEl${index}`;
-//     tempPlayEl.draggable = true;
-//     tempPlayEl.classList.add("inputItems");
-
-//     // Adding index for the new element
-//     const tempIndex = document.createElement("p");
-//     tempIndex.innerText = index;
-
-//     // Adding delete button for the new element
-//     const deleteBtn = document.createElement('button');
-//     deleteBtn.innerText = 'x';
-//     deleteBtn.classList.add('deleteBtn');
-//     deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
-
-//     // Event listener to show delete button on hover
-//     tempCon.addEventListener('mouseenter', () => {
-//         deleteBtn.style.visibility = 'visible';
-//     });
-
-//     // Event listener to hide delete button on mouse leave
-//     tempCon.addEventListener('mouseleave', () => {
-//         deleteBtn.style.visibility = 'hidden';
-//     });
-
-//     // Event listener to delete element on button click
-//     deleteBtn.addEventListener('click', () => {
-//         deleteElement(tempCon); // Pass the container div to deleteElement function
-//     });
-
-//     const newContainer = document.createElement("div");
-//     newContainer.classList.add("inputCon");
-
-//     // Append input, index, and delete button to the new container
-//     newContainer.append(tempPlayEl, tempIndex, deleteBtn);
-
-//     // Insert the new container after the current container
-//     container.parentElement.insertBefore(newContainer, container.nextSibling);
-
-//     // Update indexes of all elements
-//     objArr.forEach((obj, i) => {
-//         obj.playEl.previousElementSibling.innerText = i; // Update index text
-//     });
-
-//     updateCodeArea(); // Update code area after addition
-// }
-
-// // Function to update the event listeners for hover and click events on input elements
-// function updateInputListeners(input) {
-//     input.addEventListener('mouseenter', () => {
-//         const buttons = input.parentElement.querySelectorAll('button');
-//         buttons.forEach(button => {
-//             button.style.visibility = 'visible';
-//         });
-//     });
-
-//     input.addEventListener('mouseleave', () => {
-//         const buttons = input.parentElement.querySelectorAll('button');
-//         buttons.forEach(button => {
-//             button.style.visibility = 'hidden';
-//         });
-//     });
-// }
-
-// // Inside the createArr function
-// // Add buttons for adding elements on both sides of each input element
-// const addLeftButton = document.createElement('button');
-// addLeftButton.innerText = '+';
-// addLeftButton.classList.add('addElementButton');
-
-// const addRightButton = document.createElement('button');
-// addRightButton.innerText = '+';
-// addRightButton.classList.add('addElementButton');
-
-// tempCon.append(tempPlayEl, tempIndex, addLeftButton, addRightButton, deleteBtn); // Append buttons to container
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function addElement() {
-//     // Create a new input element
-//     const newInput = document.createElement('input');
-//     newInput.type = dataType; // Set the type based on the selected data type
-//     newInput.classList.add('inputItems');
-//     newInput.draggable = true; // Make draggable
-
-//     // Create a new paragraph element for index
-//     const newIndex = document.createElement('p');
-//     newIndex.className = 'index'; // Add class for styling
-//     newIndex.innerText = objArr.length; // Set index value
-
-//     // Create a new container for the input item, index, and buttons
-//     const newContainer = document.createElement('div');
-//     newContainer.classList.add('inputCon');
-
-//     // Left button
-//     const leftButton = document.createElement('button');
-//     leftButton.innerText = '+';
-//     leftButton.classList.add('addButton');
-//     leftButton.classList.add('leftButton');
-//     leftButton.style.visibility = 'hidden';
-
-//     // Right button
-//     const rightButton = document.createElement('button');
-//     rightButton.innerText = '+';
-//     rightButton.classList.add('addButton');
-//     rightButton.classList.add('rightButton');
-//     rightButton.style.visibility = 'hidden';
-
-//     // Show buttons on hover
-//     newContainer.addEventListener('mouseenter', () => {
-//         leftButton.style.visibility = 'visible';
-//         rightButton.style.visibility = 'visible';
-//     });
-
-//     // Hide buttons on mouse leave
-//     newContainer.addEventListener('mouseleave', () => {
-//         leftButton.style.visibility = 'hidden';
-//         rightButton.style.visibility = 'hidden';
-//     });
-
-//     // Add event listeners to buttons
-//     leftButton.addEventListener('click', () => {
-//         addElementBefore(newContainer);
-//     });
-
-//     rightButton.addEventListener('click', () => {
-//         addElementAfter(newContainer);
-//     });
-
-//     // Append elements to the container
-//     newContainer.append(leftButton, newInput, newIndex, rightButton);
-
-//     // Add the new input item to the play area
-//     playAreaEls.appendChild(newContainer);
-
-//     // Create a new span element for the code area
-//     const newCodeEl = document.createElement('span');
-//     newCodeEl.className = `codeEl${objArr.length + 1}`; // Set class for styling
-//     newCodeEl.innerText = "0"; // Initialize with '0'
-
-//     // Update the objArr with the new input and code elements
-//     const newObj = { playEl: newInput, codeEl: newCodeEl };
-//     objArr.push(newObj);
-
-//     // Add event listeners for input changes, click events, and drag events
-//     addInputListeners(newObj); // Add input listeners to the new input element
-//     addClickListeners(newObj);
-//     newInput.addEventListener('dragstart', dragStart);
-//     newInput.addEventListener('dragover', dragOver);
-//     newInput.addEventListener('drop', drop);
-//     newInput.addEventListener('dragend', dragEnd);
-
-//     // Insert comma if needed
-//     if (objArr.length > 1) {
-//         const comma = document.createElement('span');
-//         comma.innerText = ', ';
-//         codeAreaPara.insertBefore(comma, codeAreaPara.lastChild.previousSibling); // Insert comma before the last but one element
-//     }
-
-//     // Update the text content of codeEl and rearrange brackets
-//     updateCodeArea();
-// }
-
-
-// function addElementBefore(container) {
-//     // Create a new input element
-//     const newInput = document.createElement('input');
-//     newInput.type = dataType; // Set the type based on the selected data type
-//     newInput.classList.add('inputItems');
-//     newInput.draggable = true; // Make draggable
-
-//     // Create a new paragraph element for index
-//     const newIndex = document.createElement('p');
-//     newIndex.className = 'index'; // Add class for styling
-//     newIndex.innerText = objArr.length; // Set index value
-
-//     // Create a new container for the input item, index, and buttons
-//     const newContainer = document.createElement('div');
-//     newContainer.classList.add('inputCon');
-
-//     // Left button
-//     const leftButton = document.createElement('button');
-//     leftButton.innerText = '+';
-//     leftButton.classList.add('addButton');
-//     leftButton.classList.add('leftButton');
-//     leftButton.style.visibility = 'hidden';
-
-//     // Right button
-//     const rightButton = document.createElement('button');
-//     rightButton.innerText = '+';
-//     rightButton.classList.add('addButton');
-//     rightButton.classList.add('rightButton');
-//     rightButton.style.visibility = 'hidden';
-
-//     // Show buttons on hover
-//     newContainer.addEventListener('mouseenter', () => {
-//         leftButton.style.visibility = 'visible';
-//         rightButton.style.visibility = 'visible';
-//     });
-
-//     // Hide buttons on mouse leave
-//     newContainer.addEventListener('mouseleave', () => {
-//         leftButton.style.visibility = 'hidden';
-//         rightButton.style.visibility = 'hidden';
-//     });
-
-//     // Add event listeners to buttons
-//     leftButton.addEventListener('click', () => {
-//         addElementBefore(newContainer);
-//     });
-
-//     rightButton.addEventListener('click', () => {
-//         addElementAfter(newContainer);
-//     });
-
-//     // Append elements to the container
-//     newContainer.append(leftButton, newInput, newIndex, rightButton);
-
-//     // Add the new input item to the play area before the specified container
-//     container.parentNode.insertBefore(newContainer, container);
-// }
-
-// function addElementAfter(container) {
-//     // Create a new input element
-//     const newInput = document.createElement('input');
-//     newInput.type = dataType; // Set the type based on the selected data type
-//     newInput.classList.add('inputItems');
-//     newInput.draggable = true; // Make draggable
-
-//     // Create a new paragraph element for index
-//     const newIndex = document.createElement('p');
-//     newIndex.className = 'index'; // Add class for styling
-//     newIndex.innerText = objArr.length; // Set index value
-
-//     // Create a new container for the input item, index, and buttons
-//     const newContainer = document.createElement('div');
-//     newContainer.classList.add('inputCon');
-
-//     // Left button
-//     const leftButton = document.createElement('button');
-//     leftButton.innerText = '+';
-//     leftButton.classList.add('addButton');
-//     leftButton.classList.add('leftButton');
-//     leftButton.style.visibility = 'hidden';
-
-//     // Right button
-//     const rightButton = document.createElement('button');
-//     rightButton.innerText = '+';
-//     rightButton.classList.add('addButton');
-//     rightButton.classList.add('rightButton');
-//     rightButton.style.visibility = 'hidden';
-
-//     // Show buttons on hover
-//     newContainer.addEventListener('mouseenter', () => {
-//         leftButton.style.visibility = 'visible';
-//         rightButton.style.visibility = 'visible';
-//     });
-
-//     // Hide buttons on mouse leave
-//     newContainer.addEventListener('mouseleave', () => {
-//         leftButton.style.visibility = 'hidden';
-//         rightButton.style.visibility = 'hidden';
-//     });
-
-//     // Add event listeners to buttons
-//     leftButton.addEventListener('click', () => {
-//         addElementBefore(newContainer);
-//     });
-
-//     rightButton.addEventListener('click', () => {
-//         addElementAfter(newContainer);
-//     });
-
-//     // Append elements to the container
-//     newContainer.append(leftButton, newInput, newIndex, rightButton);
-
-//     // Add the new input item to the play area after the specified container
-//     container.parentNode.insertBefore(newContainer, container.nextSibling);
-// }
-
-
-
-
-// function createArr() {
-//     const inputValue = parseInt(arrSize.value);
-//     dataType = arrDatatype.value; // Get the selected data type
-
-//     // Check if the input value is greater than 10
-//     if (inputValue > 10) {
-//         alert("Max 10 elements allowed. Please re-enter a value less than or equal to 10.");
-//         arrSize.value = ""; // Clear the input field
-//         return; // Exit the function
-//     }
-
-//     // Check if the array is already initialized
-//     if (objArr.length > 0) {
-//         const replaceArray = confirm("An array is already initialized. Do you want to replace it?");
-//         if (replaceArray) {
-//             // If yes, remove the existing array
-//             objArr.forEach(obj => obj.playEl.parentElement.remove());
-//             objArr.length = 0; // Clear the array
-//         } else {
-//             return; // Exit the function without adding a new array
-//         }
-//     }
-
-//     // Clear the codeArea
-//     codeAreaPara.innerHTML = "";
-
-//     // Update the declaration of 'let array = []' based on the new input value and data type
-//     const arrayDeclaration = document.createElement("span");
-//     arrayDeclaration.innerText = `let array = [ `;
-//     codeAreaPara.append(arrayDeclaration);
-
-//     // Add an event listener to prevent default behavior for drag events
-//     document.addEventListener('dragstart', function(event) {
-//         const target = event.target;
-//         // Check if the drag event originates from an input element within the play area
-//         if (!target.classList.contains('inputItems')) {
-//             event.preventDefault();
-//         }
-//     });
-
-//     // Inside the createArr function
-//     for (let i = 0; i < inputValue; i++) {
-//         const tempCon = document.createElement("div");
-//         tempCon.classList.add("inputCon");
-
-//         // Creating input element in the playarea
-//         const tempPlayEl = document.createElement("input");
-//         tempPlayEl.type = dataType;
-//         tempPlayEl.id = `playEl${i + 1}`;
-//         tempPlayEl.classList.add("inputItems");
-
-//         // Set only the input elements as draggable
-//         tempPlayEl.draggable = true;
-
-//         // Adding delete button
-//         const deleteBtn = document.createElement('button');
-//         deleteBtn.innerText = 'x';
-//         deleteBtn.classList.add('deleteBtn');
-//         deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
-
-//         // Event listener to show delete button on hover
-//         tempCon.addEventListener('mouseenter', () => {
-//             deleteBtn.style.visibility = 'visible';
-//         });
-
-//         // Event listener to hide delete button on mouse leave
-//         tempCon.addEventListener('mouseleave', () => {
-//             deleteBtn.style.visibility = 'hidden';
-//         });
-
-//         // Event listener to delete element on button click
-//         deleteBtn.addEventListener('click', () => {
-//             deleteElement(tempCon); // Pass the container div to deleteElement function
-//         });
-
-//         //Indexes
-//         const tempIndex = document.createElement("p");
-//         tempIndex.innerText = i;
-
-//         tempCon.append(tempPlayEl, tempIndex, deleteBtn); // Append delete button to container
-//         playAreaEls.append(tempCon);
-
-//         // Creating span element in the code area
-//         const tempCodeEl = document.createElement("span");
-//         tempCodeEl.id = `codeEl${i + 1}`;
-//         tempCodeEl.innerText = "0";
-//         codeAreaPara.append(tempCodeEl);
-
-//         // Adding Comma after every span in codeArea and at the end closing square bracket
-//         if (i !== inputValue - 1) {
-//             const tempComma = document.createElement("span");
-//             tempComma.innerText = " , ";
-//             codeAreaPara.append(tempComma);
-//         } else {
-//             const tempBracket = document.createElement("span");
-//             tempBracket.innerText = " ]";
-//             codeAreaPara.append(tempBracket);
-//         }
-
-//         // Making an object of input and span for linking them together and adding the object in the objArr
-//         const tempObj = { playEl: tempPlayEl, codeEl: tempCodeEl };
-//         objArr.push(tempObj);
-
-//     // Add event listeners for input changes, click events, and drag events
-//     addInputListeners(tempObj);
-//     addClickListeners(tempObj);
-//     tempPlayEl.addEventListener('dragstart', dragStart);
-//     tempPlayEl.addEventListener('dragover', dragOver);
-//     tempPlayEl.addEventListener('drop', drop);
-//     tempPlayEl.addEventListener('dragend', dragEnd);
-
-//         // Create buttons for adding elements before and after each input item
-//         const addButtonBefore = document.createElement("button");
-//         addButtonBefore.innerText = "Add Before";
-//         addButtonBefore.classList.add('btnAddBefore');
-//         addButtonBefore.addEventListener('click', () => {
-//             addElementBefore(tempCon);
-//         });
-
-//         const addButtonAfter = document.createElement("button");
-//         addButtonAfter.innerText = "Add After";
-//         addButtonAfter.classList.add('btnAddAfter');
-//         addButtonAfter.addEventListener('click', () => {
-//             addElementAfter(tempCon);
-//         });
-
-//         // Add buttons to the container
-//         tempCon.appendChild(addButtonBefore);
-//         tempCon.appendChild(addButtonAfter);
-//     }
-// }
-
-
-// // Function to add a new element before the specified container
-// function addElementBefore(container) {
-//     const para = document.createElement("p");
-//     para.innerText = `New Element Before: `;
-//     const input = document.createElement("input");
-//     input.type = "text";
-//     input.classList.add('inputItems');
-//     para.appendChild(input);
-//     const codePara = document.createElement("p");
-//     codePara.innerText = "0";
-//     const index = Array.from(container.parentNode.children).indexOf(container);
-//     const newObj = { playEl: input, codeEl: codePara };
-
-//     // Create buttons for adding elements before and after the new input item
-//     const addButtonBefore = document.createElement("button");
-//     addButtonBefore.innerText = "Add Before";
-//     addButtonBefore.classList.add('btnAddBefore');
-//     addButtonBefore.addEventListener('click', () => {
-//         addElementBefore(para);
-//     });
-
-//     const addButtonAfter = document.createElement("button");
-//     addButtonAfter.innerText = "Add After";
-//     addButtonAfter.classList.add('btnAddAfter');
-//     addButtonAfter.addEventListener('click', () => {
-//         addElementAfter(para);
-//     });
-
-//     // Add buttons to the paragraph
-//     para.appendChild(addButtonBefore);
-//     para.appendChild(addButtonAfter);
-
-//     container.parentNode.insertBefore(para, container);
-//     container.parentNode.insertBefore(codePara, container);
-
-//     objArr.splice(index, 0, newObj); // Insert the new object into objArr at the specified index
-
-//         // Add event listeners for input items
-//         addInputListeners(newObj);
-//         addClickListeners(newObj);
-
-// }
-
-// // Function to add a new element after the specified container
-// function addElementAfter(container) {
-//     const para = document.createElement("p");
-//     para.innerText = `New Element After: `;
-//     const input = document.createElement("input");
-//     input.type = "text";
-//     input.classList.add('inputItems');
-//     para.appendChild(input);
-//     const codePara = document.createElement("p");
-//     codePara.innerText = "0";
-//     const index = Array.from(container.parentNode.children).indexOf(container) + 1;
-//     const newObj = { playEl: input, codeEl: codePara };
-
-//     // Create buttons for adding elements before and after the new input item
-//     const addButtonBefore = document.createElement("button");
-//     addButtonBefore.innerText = "Add Before";
-//     addButtonBefore.classList.add('btnAddBefore');
-//     addButtonBefore.addEventListener('click', () => {
-//         addElementBefore(para);
-//     });
-
-//     const addButtonAfter = document.createElement("button");
-//     addButtonAfter.innerText = "Add After";
-//     addButtonAfter.classList.add('btnAddAfter');
-//     addButtonAfter.addEventListener('click', () => {
-//         addElementAfter(para);
-//     });
-
-//     // Add buttons to the paragraph
-//     para.appendChild(addButtonBefore);
-//     para.appendChild(addButtonAfter);
-
-//     container.parentNode.insertBefore(para, container.nextSibling);
-//     container.parentNode.insertBefore(codePara, container.nextSibling);
-
-//     objArr.splice(index, 0, newObj); // Insert the new object into objArr at the specified index
-
-//     // Add event listeners for input items
-//     addInputListeners(newObj);
-//     addClickListeners(newObj);
-// }
-//     // Initialize drag and drop functionality
-//     playAreaEls.addEventListener('dragstart', dragStart);
-//     playAreaEls.addEventListener('dragover', dragOver);
-//     playAreaEls.addEventListener('drop', drop);
-//     playAreaEls.addEventListener('dragend', dragEnd);
-
-
-
+function createPythonArray() {
+    // Get the user input from the textarea
+    const userInput = document.getElementById("userArrayInput").value;
+
+    // Split the user input by lines
+    const lines = userInput.split('\n');
+
+    // Process each line separately
+    lines.forEach(line => {
+        // Define the regular expression pattern for the expected format of array initialization
+        const initRegex = /(\w+)\s*=\s*\[\s*([^[\]]*)\s*\]/;
+
+        // Define the regular expression pattern for the expected format of append operation
+        const appendRegex = /(\w+)\s*\.\s*append\(([^()]*)\)/;
+
+        // Define the regular expression pattern for the expected format of delete operation
+        const deleteRegex = /(\w+)\s*\.\s*pop\(\s*(\d+|"([^"]+)")\s*\)/;
+
+        // Check if the line matches the format of array initialization
+        const initMatch = line.match(initRegex);
+        const appendMatch = line.match(appendRegex);
+        const deleteMatch = line.match(deleteRegex);
+
+        if (initMatch) {
+            // Process array initialization
+            const variableName = initMatch[1];
+            const elementsString = initMatch[2];
+            
+            // Split the elements string into individual elements
+            const elements = elementsString.split(',').map(element => element.trim());
+
+        // Initialize an array to store the validated elements
+        const validatedElements = [];
+
+        // Regular expressions for different data types
+        const stringRegex = /^"([^"]*)"$/;
+        const charRegex = /^'([^'])'$/;
+        const intRegex = /^-?\d+$/;
+        const floatRegex = /^-?\d+(\.\d+)?$/;
+
+        // Validate each element based on its data type
+        for (let element of elements) {
+            let validatedElement = null;
+
+            // Check if the element is a string
+            if (stringRegex.test(element)) {
+                validatedElement = element.slice(1, -1); // Remove the surrounding quotes
+            }
+            // Check if the element is a character
+            else if (charRegex.test(element)) {
+                validatedElement = element.charAt(1); // Get the character inside the single quotes
+            }
+            // Check if the element is an integer
+            else if (intRegex.test(element)) {
+                validatedElement = parseInt(element);
+            }
+            // Check if the element is a float
+            else if (floatRegex.test(element)) {
+                validatedElement = parseFloat(element);
+            }
+
+            // If the element is validated, add it to the array
+            if (validatedElement !== null) {
+                validatedElements.push(validatedElement);
+            } else {
+                // If any element fails validation, display an error message and stop processing
+                alert(`Invalid element: ${element}`);
+                return;
+            }
+        }
+
+        // Clear any existing array elements
+        playAreaEls.innerHTML = '';
+        objArr = []; // Reset objArr
+
+        // Clear the codeAreaPara
+        codeAreaPara.innerHTML = "";
+
+        // Update the declaration of 'let array = []' based on the new input value and data type
+        const arrayDeclaration = document.createElement("span");
+        arrayDeclaration.innerText = `${variableName} = [ `;
+        codeAreaPara.append(arrayDeclaration);
+
+        // Inside the createPythonArray function
+        for (let i = 0; i < elements.length; i++) {
+            // Your existing code for creating elements goes here
+            const tempCon = document.createElement("div");
+            tempCon.classList.add("inputCon");
+
+            // Creating input element in the playarea
+            const tempPlayEl = document.createElement("input");
+            tempPlayEl.type = dataType;
+            tempPlayEl.id = `playEl${i + 1}`;
+            tempPlayEl.draggable = true;
+            tempPlayEl.classList.add("inputItems");
+
+            //Indexes
+            const tempIndex = document.createElement("p");
+            tempIndex.innerText = i;
+
+            // Adding delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerText = 'x';
+            deleteBtn.classList.add('deleteBtn');
+            deleteBtn.style.visibility = 'hidden'; // Initially hide delete button
+
+            // Event listener to show delete button on hover
+            tempCon.addEventListener('mouseenter', () => {
+                deleteBtn.style.visibility = 'visible';
+            });
+
+            // Event listener to hide delete button on mouse leave
+            tempCon.addEventListener('mouseleave', () => {
+                deleteBtn.style.visibility = 'hidden';
+            });
+
+            // Event listener to delete element on button click
+            deleteBtn.addEventListener('click', () => {
+                // Call the deleteElement function passing the parent container
+                deleteElement(tempCon);
+            });
+
+            tempCon.append(tempPlayEl, tempIndex, deleteBtn); // Append delete button to container
+            playAreaEls.append(tempCon);
+
+            // Set the value of the input element
+            tempPlayEl.value = elements[i];
+
+            // Creating span element in the code area
+            const tempCodeEl = document.createElement("span");
+            tempCodeEl.id = `codeEl${i + 1}`;
+            tempCodeEl.innerText = elements[i];
+            codeAreaPara.append(tempCodeEl);
+
+            // Adding Comma after every span in codeArea and at the end closing square bracket
+            if (i !== elements.length - 1) {
+                const tempComma = document.createElement("span");
+                tempComma.innerText = " , ";
+                codeAreaPara.append(tempComma);
+            } else {
+                const tempBracket = document.createElement("span");
+                tempBracket.innerText = " ]";
+                codeAreaPara.append(tempBracket);
+            }
+
+            // Making an object of input and span for linking them together and adding the object in the objArr
+            const tempObj = { playEl: tempPlayEl, codeEl: tempCodeEl };
+            objArr.push(tempObj);
+
+            // Add event listeners for input changes, click events, and drag events
+            addInputListeners(tempObj);
+            addClickListeners(tempObj);
+            tempPlayEl.addEventListener('dragstart', dragStart);
+            tempPlayEl.addEventListener('dragover', dragOver);
+            tempPlayEl.addEventListener('drop', drop);
+            tempPlayEl.addEventListener('dragend', dragEnd);
+        }
+    }  else if (appendMatch) {
+        // Process append operation
+        const variableName = appendMatch[1];
+        const value = appendMatch[2];
+        addElement(value); // Call the addElement function with the provided value
+    } else if (deleteMatch) {
+        // Process delete operation
+        const variableName = deleteMatch[1];
+        const indexOrValue = deleteMatch[2];
+        // Call the deleteElement function with the provided index or value
+        deleteElementByIndexOrValue(indexOrValue);
+    } else {
+        // Display an error message for invalid input
+        alert(`Invalid input: ${line}`);
+    }
+});
+
+// Set arrayInitialized to true if the array is initialized successfully
+arrayInitialized = true;
+}

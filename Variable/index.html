@@ -7,11 +7,20 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <nav>
+    <div class="navbar">
+      <div class="logo">Code Visualizer</div>
+    </div>
+  </nav>
   <div class="container">
-    <h1>Code Runner</h1>
+    <h1>Variable Visualization</h1>
     <div class="editor">
       <textarea id="codeInput" placeholder="Enter your code here..."></textarea>
       <button onclick="runCode()">Run</button>
+    </div>
+    <div class="output">
+      <h2>Execution:</h2>
+      <div id="execution"></div>
     </div>
     <div class="output">
       <h2>Output:</h2>
@@ -34,6 +43,7 @@
       </table>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
   <script src="pyscript.js"></script>
 </body>
 </html>
